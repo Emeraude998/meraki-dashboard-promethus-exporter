@@ -7,7 +7,7 @@ import meraki
 
 
 def get_devices(devices, dashboard, organizationId):
-    devices.extend(dashboard.organizations.getOrganizationDevicesStatuses(organizationId=organizationId, total_pages="all"))
+    devices.extend(dashboard.organizations.getOrganizationDevicesAvailabilities(organizationId=organizationId, total_pages="all"))
     print('Got', len(devices), 'Devices')
 
 
@@ -136,7 +136,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
             return()
 
         self._set_headers()
-        dashboard = meraki.DashboardAPI(API_KEY, output_log=False, print_console=True, maximum_retries=20)
+        dashboard = meraki.DashboardAPI(API_KEY, output_log=False, print_console=True, maximum_retries=20, caller="promethusExporter theHolm")
 
         if "/organizations" in self.path:   # Generating list of avialable organizations for API keys.
             org_list = list()
