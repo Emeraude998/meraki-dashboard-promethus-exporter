@@ -467,6 +467,12 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # TYPE meraki_switch_port_bandwidth_upstream_kbps gauge
 # HELP meraki_switch_port_bandwidth_downstream_kbps Downstream bandwidth usage on switch port in kbps
 # TYPE meraki_switch_port_bandwidth_downstream_kbps gauge
+# HELP meraki_wireless_usage_total_kbps Total wireless usage in kbps
+# TYPE meraki_wireless_usage_total_kbps gauge
+# HELP meraki_wireless_usage_sent_kbps Wireless sent usage in kbps
+# TYPE meraki_wireless_usage_sent_kbps gauge
+# HELP meraki_wireless_usage_received_kbps Wireless received usage in kbps
+# TYPE meraki_wireless_usage_received_kbps gauge
 """
         if 'vpn' in COLLECT_EXTRA:
             response +="""
