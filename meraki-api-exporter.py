@@ -149,47 +149,56 @@ def get_switch_ports_tags_map(portTagsMap, dashboard, organizationId):
         
     except Exception as e:
         print(f"   Error fetching organization ports: {e}")
-        raise
+        raise    
 
+def get_wireless_usage(wireless_usage, dashboard, organizationId):
+    # For Prometheus scraping, we need recent data
+    # Note: Meraki's interval data may not be available for very short timespans
+    # Using 2 hours as a balance between freshness and data availability
+    timespan = 7200  # 2 hours in seconds
+    wirelessDevices = dashboard.organizations.getOrganizationDevices(organizationId=organizationId, productTypes="wireless", total_pages="all")
+    for device in wirelessDevices:
+        if 'networkId' in device:
+            response = dashboard.wireless.getNetworkWirelessUsageHistory(networkId=device['networkId'], deviceSerial=device['serial'], timespan=timespan, total_pages="all")
+            if response:
+                for item in response:
+                    item['serial'] = device['serial']
+                wireless_usage.extend(response)
+    
 
 def get_usage(dashboard, organizationId):
+    # Shared data containers for threaded collection
     devices = []
-    t1 = threading.Thread(target=get_devices, args=(devices, dashboard, organizationId))
-    t1.start()
-
     devicesStatuses = []
-    t2 = threading.Thread(target=get_device_statuses, args=(devicesStatuses, dashboard, organizationId))
-    t2.start()
-
     uplinkStatuses = []
-    t3 = threading.Thread(target=get_uplink_statuses, args=(uplinkStatuses, dashboard, organizationId))
-    t3.start()
-
-    if 'vpn' in COLLECT_EXTRA:
-        vpnStatuses = []
-        t4 = threading.Thread(target=get_vpn_statuses, args=(vpnStatuses, dashboard, organizationId))
-        t4.start()
-
+    vpnStatuses = []
     orgData = {}
-    t5 = threading.Thread(target=get_organization, args=(orgData, dashboard, organizationId))
-    t5.start()
-    
-    switchPortsUsage =[]
-    t6 = threading.Thread(target=get_switch_ports_usage, args=(switchPortsUsage, dashboard, organizationId))
-    t6.start()
-    
+    switchPortsUsage = []
     portTagsMap = {}
-    t7 = threading.Thread(target=get_switch_ports_tags_map, args=(portTagsMap, dashboard, organizationId))
-    t7.start()
-
-    t1.join()
-    t2.join()
-    t3.join()
+    wirelessUsage = []
+    
+    # Define all data collection tasks
+    threads = [
+        threading.Thread(target=get_devices, args=(devices, dashboard, organizationId)),
+        threading.Thread(target=get_device_statuses, args=(devicesStatuses, dashboard, organizationId)),
+        threading.Thread(target=get_uplink_statuses, args=(uplinkStatuses, dashboard, organizationId)),
+        threading.Thread(target=get_organization, args=(orgData, dashboard, organizationId)),
+        threading.Thread(target=get_switch_ports_usage, args=(switchPortsUsage, dashboard, organizationId)),
+        threading.Thread(target=get_switch_ports_tags_map, args=(portTagsMap, dashboard, organizationId)),
+        threading.Thread(target=get_wireless_usage, args=(wirelessUsage, dashboard, organizationId)),
+    ]
+    
+    # Add VPN collection thread if enabled
     if 'vpn' in COLLECT_EXTRA:
-        t4.join()
-    t5.join()
-    t6.join()
-    t7.join()
+        threads.append(threading.Thread(target=get_vpn_statuses, args=(vpnStatuses, dashboard, organizationId)))
+    
+    # Start all threads
+    for thread in threads:
+        thread.start()
+    
+    # Wait for all threads to complete
+    for thread in threads:
+        thread.join()
     
     # Fetch networks for this organization so we can report network names instead of IDs
     try:
@@ -313,6 +322,17 @@ def get_usage(dashboard, organizationId):
             the_list[device['serial']]['switchPortUsage'][port_id]['bandwidthTotalKbps'] = bandwidth.get('total', 0)
             the_list[device['serial']]['switchPortUsage'][port_id]['bandwidthUpstreamKbps'] = bandwidth.get('upstream', 0)
             the_list[device['serial']]['switchPortUsage'][port_id]['bandwidthDownstreamKbps'] = bandwidth.get('downstream', 0)
+    
+    for device in wirelessUsage:
+        try:
+            the_list[device['serial']]  # should give me KeyError if devices was not picked up by previous search.
+        except KeyError:
+            the_list[device['serial']] = {"missing data": True}
+        
+        the_list[device['serial']]['wirelessUsage'] = {}
+        the_list[device['serial']]['wirelessUsage']['totalKbps'] = device.get('totalKbps', 0)
+        the_list[device['serial']]['wirelessUsage']['sentKbps'] = device.get('sentKbps', 0)
+        the_list[device['serial']]['wirelessUsage']['receivedKbps'] = device.get('receivedKbps', 0)
     
     print('Done')
     return(the_list)
@@ -529,6 +549,14 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                         response += 'meraki_switch_port_bandwidth_upstream_kbps' + target + ',portId="' + _esc(port_id) + '"} ' + str(usage_data['bandwidthUpstreamKbps']) + '\n'
                     if 'bandwidthDownstreamKbps' in usage_data:
                         response += 'meraki_switch_port_bandwidth_downstream_kbps' + target + ',portId="' + _esc(port_id) + '"} ' + str(usage_data['bandwidthDownstreamKbps']) + '\n'
+            if 'wirelessUsage' in host_stats[host]:
+                wireless_data = host_stats[host]['wirelessUsage']
+                if 'totalKbps' in wireless_data:
+                    response += 'meraki_wireless_usage_total_kbps' + target + '} ' + str(wireless_data['totalKbps']) + '\n'
+                if 'sentKbps' in wireless_data:
+                    response += 'meraki_wireless_usage_sent_kbps' + target + '} ' + str(wireless_data['sentKbps']) + '\n'
+                if 'receivedKbps' in wireless_data:
+                    response += 'meraki_wireless_usage_received_kbps' + target + '} ' + str(wireless_data['receivedKbps']) + '\n'            
 
         response += '# TYPE request_processing_seconds summary\n'
         response += 'request_processing_seconds ' + str(time.monotonic() - start_time) + '\n'
