@@ -15,30 +15,32 @@ Not all devices exports all metrics.
 | meraki_vpn_exported_subnets | int | Subnet exported by the VPN, 1 per subnet |
 | meraki_vpn_meraki_peers | int | 1 - reachable <br> 0 - unreachable |
 | meraki_vpn_third_party_peers | int | 1 - reachable <br> 0 - unreachable |
-| meraki_switch_port_usage_total_bytes | bytes | Total data usage on switch port (uplink ports only) |
-| meraki_switch_port_usage_upstream_bytes | bytes | Upstream data usage on switch port (uplink ports only) |
-| meraki_switch_port_usage_downstream_bytes | bytes | Downstream data usage on switch port (uplink ports only) |
-| meraki_switch_port_bandwidth_total_kbps | kbps | Total bandwidth usage on switch port (uplink ports only) |
-| meraki_switch_port_bandwidth_upstream_kbps | kbps | Upstream bandwidth usage on switch port (uplink ports only) |
-| meraki_switch_port_bandwidth_downstream_kbps | kbps | Downstream bandwidth usage on switch port (uplink ports only) |
-| meraki_wireless_usage_total_kbps | kbps | Total wireless usage per AP |
-| meraki_wireless_usage_sent_kbps | kbps | Wireless sent usage per AP |
-| meraki_wireless_usage_received_kbps | kbps | Wireless received usage per AP |
+| meraki_switch_port_usage_total_bytes | bytes | Total data usage on switch port (uplink ports and AP-connected ports) |
+| meraki_switch_port_usage_upstream_bytes | bytes | Upstream data usage on switch port (uplink ports and AP-connected ports) |
+| meraki_switch_port_usage_downstream_bytes | bytes | Downstream data usage on switch port (uplink ports and AP-connected ports) |
+| meraki_switch_port_bandwidth_total_kbps | kbps | Total bandwidth usage on switch port (uplink ports and AP-connected ports) |
+| meraki_switch_port_bandwidth_upstream_kbps | kbps | Upstream bandwidth usage on switch port (uplink ports and AP-connected ports) |
+| meraki_switch_port_bandwidth_downstream_kbps | kbps | Downstream bandwidth usage on switch port (uplink ports and AP-connected ports) |connected ports) |
+| meraki_wireless_usage_total_bytes | bytes | Total wireless data usage per AP |
+| meraki_wireless_usage_sent_bytes | bytes | Wireless sent data usage per AP |
+| meraki_wireless_usage_received_bytes | bytes | Wireless received data usage per AP |
+| meraki_wireless_bandwidth_total_kbps | kbps | Total wireless bandwidth per AP |
+| meraki_wireless_bandwidth_sent_kbps | kbps | Wireless sent bandwidth per AP |
+| meraki_wireless_bandwidth_received_kbps | kbps | Wireless received bandwidth per AP |
 | request_processing_seconds | sec | Total processing time for all hosts, exported once |
 
 ### Labels
 All metrics but __request_processing_seconds__ have the following labels:
 | label | type | description |
 | --- | --- | --- |
-| serial | string | Serial Number |
 | name | string | Device name or MAC address if name is not defined |
-| networkName | string | Network Name (or Network ID if name unavailable) |
-| orgName | string | Organization Name |
-| orgId | integer | Organization ID |
+| office | string | Network Name (or Network ID if name unavailable) |
+| floor | string | Floor name (if device is associated with a floor plan) |
+| product_type | string | Product type (e.g., 'wireless', 'switch', 'appliance') |
 
 **meraki_device_uplink_status** also carries the "uplink" label containing the uplink name.
 
-**meraki_switch_port_\*** metrics also carry the "portId" label containing the port ID. Note: Only ports tagged with 'uplink' are exported.
+**meraki_switch_port_\*** metrics also carry the "portId" label containing the port ID. Note: Ports tagged with 'uplink' or connected to Meraki APs are exported.
 
 
 ### How to Use
