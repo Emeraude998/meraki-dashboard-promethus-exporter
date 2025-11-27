@@ -9,6 +9,11 @@ on:
   push:
     branches:
       - 'master'
+    paths:
+      - 'meraki-api-exporter.py'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - '.github/workflows/docker-image.yml'
 
 jobs:
   docker:
