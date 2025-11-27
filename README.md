@@ -82,8 +82,8 @@ Please check **/systemd** folder for systemd services and timers configuration f
 
 There is a Docker image available at `ghcr.io/Emeraude998/meraki-prometheus-exporter`. You can run the exporter with a command like:
 
-`docker run -p 9822:9822 -e MERAKI_API_KEY=<api key> ghcr.io/Emeraude998/meraki-dashboard-prometheus-exporter`
+`docker run -p 9822:9822 -e MERAKI_API_KEY=<api key> ghcr.io/Emeraude998/meraki-prometheus-exporter`
 
 If you want to pass through flags, you can do so like this:
 
-`docker run -p 9822:<port> ghcr.io/Emeraude998/meraki-dashboard-prometheus-exporter -k <api key> -p <port> --vpn`
+`docker run -p 9822:<port> ghcr.io/Emeraude998/meraki-prometheus-exporter -k <api key> -p <port> --vpn`
