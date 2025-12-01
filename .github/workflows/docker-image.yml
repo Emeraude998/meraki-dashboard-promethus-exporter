@@ -1,70 +1,43 @@
 name: Publish Docker Image
 
 on:
-  # publish on releases, e.g. v2.1.13 (image tagged as "2.1.13" - "v" prefix is removed)
-  release:
-    types: [ published ]
-
-  # publish on pushes to the main branch (image tagged as "latest")
   push:
-    branches:
-      - 'master'
-    paths:
-      - 'meraki-api-exporter.py'
-      - 'requirements.txt'
-      - 'Dockerfile'
-      - '.github/workflows/docker-image.yml'
+    tags:
+      - "v*"
 
 jobs:
-  docker:
-    runs-on: ubuntu-latest
+  build-and-push-image:
+    runs-on: "ubuntu-latest"
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: "Checkout repository"
+        uses: "actions/checkout@v4"
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: "Set up QEMU"
+        uses: "docker/setup-qemu-action@v3"
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: "Set up Docker Buildx"
+        uses: "docker/setup-buildx-action@v3"
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+      - name: "Login to GitHub Container Registry"
+        uses: "docker/login-action@v2"
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GH_PAT }}
+          username: "${{ github.repository_owner }}"
+          password: "${{ secrets.GH_PAT }}"
 
-      - name: Get latest version tag
-        id: get_version
-        run: |
-          git fetch --tags
-
-          # extract latest matching tag pattern v1.*
-          LATEST=$(git tag --list "v1.*" --sort=-v:refname | head -n1)
-
-          if [ -z "$LATEST" ]; then
-            NEW="v1.0"
-          else
-            PATCH=$(echo "$LATEST" | awk -F. '{print $NF}')
-            NEW="v1.$((PATCH+1))"
-          fi
-
-          echo "new_tag=$NEW" >> $GITHUB_OUTPUT
-
-      - name: set lower case repository name
+      - name: "Set lower case repository name"
         run: |
           echo "REPO_LC=${REPO,,}" >>${GITHUB_ENV}
         env:
           REPO: '${{ github.repository }}'
 
-      - name: Build and publish Docker image
-        uses: docker/build-push-action@v5
+      - name: "Build and publish Docker image"
+        uses: "docker/build-push-action@v5"
         with:
-          platforms: linux/amd64,linux/arm64,linux/arm/v8
+          context: "."
+          platforms: "linux/amd64,linux/arm64,linux/arm/v8"
           push: true
           tags: |
             ghcr.io/${{ env.REPO_LC }}:latest
-            ghcr.io/${{ env.REPO_LC }}:${{ steps.get_version.outputs.new_tag }}
+            ghcr.io/${{ env.REPO_LC }}:${{ github.ref_name }}
