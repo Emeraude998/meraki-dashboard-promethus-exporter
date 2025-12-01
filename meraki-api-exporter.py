@@ -101,7 +101,11 @@ def is_uplink_port(port_id, serial=None, port_tags_map=None, port_discovery_map=
             has_status_connected = True
     
     # Priority logic:
+<<<<<<< HEAD
     # 1. If discovery shows MS/MX device connected (means the port status is connected), return TRUE (highest priority)
+=======
+    # 1. If discovery shows MS/MX device connected, return TRUE (highest priority)
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
     if is_discovered_uplink:
         return True
     
@@ -227,11 +231,19 @@ def get_switch_ports_usage(switch_ports_usage, dashboard, organization_id):
         print(f"Error fetching switch port usage: {e}")
         raise
 
+<<<<<<< HEAD
 def get_switch_ports_status_map(port_statuses_map, dashboard, organization_id):
     """Fetch port status for all switches in the organization.
     
     Args:
         port_statuses_map (dict[str, dict[str, str]]): Dict to update with port connectivity status
+=======
+def get_switch_ports_status_map(ports_statuses_map, dashboard, organization_id):
+    """Fetch port status for all switches in the organization.
+    
+    Args:
+        port_statuses_map (dict[str, dict[str, list[str]]]): Dict to update with port connectivity status
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
         dashboard (meraki.DashboardAPI): Meraki API client instance
         organization_id (str): ID of the organization to fetch port statuses for
         
@@ -250,22 +262,36 @@ def get_switch_ports_status_map(port_statuses_map, dashboard, organization_id):
             switches_statuses = response['items']
             print(f"Found {len(switches_statuses)} switch devices")
 
+<<<<<<< HEAD
         # Build the port statuses map
+=======
+        # Build the port tags map
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
         for switch in switches_statuses:
             serial = switch.get('serial')
             if not serial:
                 continue
 
+<<<<<<< HEAD
             port_statuses_map[serial] = {}
+=======
+            ports_statuses_map[serial] = {}
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
             ports = switch.get('ports', [])
 
             for port in ports:
                 port_id = str(port.get('portId', ''))
                 status = port.get('status', '')
                 if status:
+<<<<<<< HEAD
                     port_statuses_map[serial][port_id] = status
         
         print('Found', sum(len(ports) for ports in port_statuses_map.values()), 'port statuses')
+=======
+                    ports_statuses_map[serial][port_id] = status
+        
+        print('Found', sum(len(ports) for ports in ports_statuses_map.values()), 'port statuses')
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
 
     except Exception as e:
         print(f"Error fetching switch ports statuses: {e}")
@@ -686,7 +712,11 @@ def get_usage(dashboard, organization_id):
     vpn_statuses = []
     org_data = {}
     switch_ports_usage = []
+<<<<<<< HEAD
     port_statuses_map = {}
+=======
+    ports_statuses_map = {}
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
     port_tags_map = {}
     port_discovery_map = {}
     devices_floor_info = {}
@@ -708,7 +738,11 @@ def get_usage(dashboard, organization_id):
         threading.Thread(target=get_firewall_uplink_statuses, args=(firewall_uplink_statuses, dashboard, organization_id)),
         threading.Thread(target=get_organization, args=(org_data, dashboard, organization_id)),
         threading.Thread(target=get_switch_ports_usage, args=(switch_ports_usage, dashboard, organization_id)),
+<<<<<<< HEAD
         threading.Thread(target=get_switch_ports_status_map, args=(port_statuses_map, dashboard, organization_id)),
+=======
+        threading.Thread(target=get_switch_ports_status_map, args=(ports_statuses_map, dashboard, organization_id)),
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
         threading.Thread(target=get_switch_ports_tags_map, args=(port_tags_map, dashboard, organization_id)),
         threading.Thread(target=get_switch_ports_topology_discovery, args=(port_discovery_map, dashboard, organization_id)),
         threading.Thread(target=get_floor_name_per_device, args=(devices_floor_info, dashboard, organization_id)),
@@ -849,10 +883,17 @@ def get_usage(dashboard, organization_id):
 
             # Check if this port is an ap port (topology discovery)
             # or an uplink port (based on tags and / or topology discovery)
+<<<<<<< HEAD
             is_uplink = is_uplink_port(port_id, serial=device['serial'], port_tags_map=port_tags_map, port_discovery_map=port_discovery_map, port_statuses_map=port_statuses_map)
             is_ap, ap_name = is_ap_device(port_id, serial=device['serial'], port_discovery_map=port_discovery_map)
 
             # Skip ports that are neither uplink nor AP ports
+=======
+            is_uplink = is_uplink_port(port_id, serial=device['serial'], port_tags_map=port_tags_map, port_discovery_map=port_discovery_map, port_statuses_map=ports_statuses_map)
+            is_ap, ap_name = is_ap_device(port_id, serial=device['serial'], port_discovery_map=port_discovery_map)
+
+             # Skip ports that are neither uplink nor AP ports
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
             if not is_uplink and not is_ap:
                 continue  # Keep only connected uplink ports or AP ports
 
@@ -879,6 +920,7 @@ def get_usage(dashboard, organization_id):
 
             if is_ap:
                 the_list[device['serial']]['switchPortUsage'][port_id]['ap_device_name'] = ap_name
+<<<<<<< HEAD
 
     # Add wireless client counts to devices
     for serial, client_count in ap_clients_info.items():
@@ -903,6 +945,8 @@ def get_usage(dashboard, organization_id):
 >>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
 =======
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
+=======
+>>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
 
     print('Done')
     return the_list
