@@ -361,6 +361,35 @@ def get_switch_ports_topology_discovery(port_discovery_map, dashboard, organizat
     
     print('Found', sum(len(ports) for ports in port_discovery_map.values()), 'switch ports connected to Meraki devices')
 
+def get_wireless_ap_clients(ap_clients_info, dashboard, organization_id):
+    """List access point client count at the moment in an organization
+    
+    Args:
+        ap_clients_info (dict[str, str]): List to append AP client count data to
+        dashboard (meraki.DashboardAPI): Meraki API client instance
+        organization_id (str): ID of the organization to fetch AP client counts for
+    Returns:
+        None: Modifies list in place
+    """
+    response = dashboard.wireless.getOrganizationWirelessClientsOverviewByDevice(
+        organizationId=organization_id,
+        total_pages="all"
+    )
+    
+    # Response is a dict with 'items' and 'meta' when using total_pages="all"
+    if isinstance(response, dict) and 'items' in response:
+        ap_clients_list = response['items']
+    else:
+        ap_clients_list = response
+    
+    print('Found', sum(device.get('counts', {}).get('byStatus', {}).get('online', 0) for device in ap_clients_list), 'wireless clients')
+    
+    for device in ap_clients_list:
+        serial = device.get('serial')
+        client_count = device.get('counts', {}).get('byStatus', {}).get('online', 0)
+        if serial:
+            ap_clients_info[serial] = client_count
+
 def parse_discovery_info(info_list):
     """Parse CDP or LLDP information from list of {'name': ..., 'value': ...} dicts
     
@@ -515,6 +544,7 @@ def get_usage(dashboard, organization_id):
     port_tags_map = {}
     port_discovery_map = {}
     devices_floor_info = {}
+    ap_clients_info = {}
 
     # Define all data collection tasks
     threads = [
@@ -527,6 +557,7 @@ def get_usage(dashboard, organization_id):
         threading.Thread(target=get_switch_ports_tags_map, args=(port_tags_map, dashboard, organization_id)),
         threading.Thread(target=get_switch_ports_topology_discovery, args=(port_discovery_map, dashboard, organization_id)),
         threading.Thread(target=get_floor_name_per_device, args=(devices_floor_info, dashboard, organization_id)),
+        threading.Thread(target=get_wireless_ap_clients, args=(ap_clients_info, dashboard, organization_id)),
     ]
 
     # Add VPN collection thread if enabled
@@ -684,6 +715,11 @@ def get_usage(dashboard, organization_id):
             if is_ap:
                 the_list[device['serial']]['switchPortUsage'][port_id]['ap_device_name'] = ap_name
 
+    # Add wireless client counts to devices
+    for serial, client_count in ap_clients_info.items():
+        if serial in the_list:
+            the_list[serial]['wirelessClientCount'] = client_count
+
     print('Done')
     return the_list
 # end of get_usage()
@@ -829,6 +865,8 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # TYPE meraki_wireless_bandwidth_sent_kbps gauge
 # HELP meraki_wireless_bandwidth_received_kbps Wireless received bandwidth in kbps
 # TYPE meraki_wireless_bandwidth_received_kbps gauge
+# HELP meraki_wireless_client_count Number of clients connected to wireless access point
+# TYPE meraki_wireless_client_count gauge
 """
         if 'vpn' in COLLECT_EXTRA:
             response +="""
@@ -862,6 +900,22 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
             s = s.replace('"', '\\"')
             return s
 
+        # Helper to find floor_name for an AP by its name
+        def get_ap_floor_name(ap_device_name):
+            """Find the floor_name for an AP device by searching host_stats.
+            
+            Args:
+                ap_device_name (str): The AP device name to search for
+                
+            Returns:
+                str: The floor_name if found, empty string otherwise
+            """
+            for serial, device_data in host_stats.items():
+                if isinstance(device_data, dict):
+                    if device_data.get('name') == ap_device_name:
+                        return device_data.get('floor_name', None)
+            return ''
+
         for host in host_stats.keys():
             # The getOrganizationDevicesUplinksLossAndLatency can return devices with no serial numbers.
             if host is None:
@@ -888,6 +942,11 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                 response += 'meraki_device_using_cellular_failover' + target + '} ' + ('1' if host_stats[host]['usingCellularFailover'] else '0') + '\n'
             except KeyError:
                 pass
+            try:
+                if 'wirelessClientCount' in host_stats[host]:
+                    response += 'meraki_wireless_client_count' + target + '} ' + str(host_stats[host]['wirelessClientCount']) + '\n'
+            except KeyError:
+                pass
             if 'uplinks' in host_stats[host]:
                 for uplink in host_stats[host]['uplinks'].keys():
                     response += 'meraki_device_uplink_status' + target + ',uplink="' + uplink + '"} ' + str(firewall_uplink_statuses[host_stats[host]['uplinks'][uplink]]) + '\n'
@@ -907,7 +966,9 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
             if 'switchPortUsage' in host_stats[host]:
                 for port_id, usage_data in host_stats[host]['switchPortUsage'].items():
                     if 'ap_device_name' in usage_data:
-                        ap_target = '{name="' + _esc(usage_data['ap_device_name']) + '",office="' + _esc(network_name_label) + '",floor="' + _esc(hs.get('floor_name')) + '",product_type="wireless"'
+                        # Get the floor_name from the AP device, not the switch
+                        ap_floor_name = get_ap_floor_name(usage_data['ap_device_name'])
+                        ap_target = '{name="' + _esc(usage_data['ap_device_name']) + '",office="' + _esc(network_name_label) + '",floor="' + _esc(ap_floor_name) + '",product_type="wireless"'
                         if 'UsageTotalBytes' in usage_data:
                             response += 'meraki_wireless_usage_total_bytes' + ap_target + '} ' + str(usage_data['UsageTotalBytes']*1024) + '\n'
                         if 'UsageUpstreamBytes' in usage_data:
