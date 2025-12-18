@@ -547,16 +547,27 @@ def get_wireless_ap_cpu_load_history(ap_cpu_loads, dashboard, organization_id):
     print('Found CPU load data for', len(ap_cpu_loads), 'wireless APs')
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 def get_device_memory_usage(device_memory_usage, dashboard, organization_id):
     """Return the memory utilization history in kB for devices in the organization.
     
     Args:
+<<<<<<< HEAD
         device_memory_usage (dict[str, float]): List to append device memory usage data to
+=======
+        device_memory_usage (dict[str, str]): List to append device memory usage data to
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
         dashboard (meraki.DashboardAPI): Meraki API client instance
         organization_id (str): ID of the organization to fetch device memory usage for
         
     Returns:
+<<<<<<< HEAD
         None: Modifies dict in place
+=======
+        None: Modifies list in place
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
     """
     timespan = 120 # 2 minutes in seconds
     
@@ -583,10 +594,13 @@ def get_device_memory_usage(device_memory_usage, dashboard, organization_id):
         if serial:
             device_memory_usage[serial] = memory_used_percentage
 
+<<<<<<< HEAD
 =======
 >>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
 =======
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 def parse_discovery_info(info_list):
     """Parse CDP or LLDP information from list of {'name': ..., 'value': ...} dicts
     
@@ -758,7 +772,11 @@ def get_usage(dashboard, organization_id):
 >>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
 =======
     ap_cpu_loads = {}
+<<<<<<< HEAD
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
+=======
+    device_memory_usage = {}
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 
     # Define all data collection tasks
     threads = [
@@ -784,11 +802,14 @@ def get_usage(dashboard, organization_id):
 <<<<<<< HEAD
         threading.Thread(target=get_wireless_ap_cpu_load_history, args=(ap_cpu_loads, dashboard, organization_id)),
         threading.Thread(target=get_device_memory_usage, args=(device_memory_usage, dashboard, organization_id)),
+<<<<<<< HEAD
 =======
 >>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
 =======
         threading.Thread(target=get_wireless_ap_cpu_load_history, args=(ap_cpu_loads, dashboard, organization_id)),
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
     ]
 
     # Add VPN collection thread if enabled
@@ -976,17 +997,23 @@ def get_usage(dashboard, organization_id):
         if serial in the_list:
             the_list[serial]['wirelessApCpuLoadPercent'] = cpu_load
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
             
     # Add device memory usage to devices
     for serial, memory_usage in device_memory_usage.items():
         if serial in the_list:
             the_list[serial]['memoryUsedPercent'] = memory_usage
+<<<<<<< HEAD
 =======
 >>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
 =======
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
 =======
 >>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 
     print('Done')
     return the_list
@@ -1110,6 +1137,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # TYPE meraki_device_using_cellular_failover gauge
 # UNIT meraki_device_using_cellular_failover boolean
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 # HELP meraki_switch_port_usage_total_bytes Total data usage on switch port in bytes
 # TYPE meraki_switch_port_usage_total_bytes gauge
@@ -1121,6 +1149,8 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # TYPE meraki_switch_port_usage_downstream_bytes gauge
 # UNIT meraki_switch_port_usage_downstream_bytes bytes
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 # HELP meraki_switch_port_bandwidth_total_kbps Total bandwidth usage on switch port in kbps
 # TYPE meraki_switch_port_bandwidth_total_kbps gauge
 # UNIT meraki_switch_port_bandwidth_total_kbps kbps
@@ -1130,6 +1160,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # HELP meraki_switch_port_bandwidth_downstream_kbps Downstream bandwidth usage on switch port in kbps
 # TYPE meraki_switch_port_bandwidth_downstream_kbps gauge
 # UNIT meraki_switch_port_bandwidth_downstream_kbps kbps
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 # HELP meraki_wireless_usage_total_bytes Total wireless usage in bytes
@@ -1142,6 +1173,8 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # TYPE meraki_wireless_usage_received_bytes gauge
 # UNIT meraki_wireless_usage_received_bytes bytes
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 # HELP meraki_wireless_bandwidth_total_kbps Total wireless bandwidth in kbps
 # TYPE meraki_wireless_bandwidth_total_kbps gauge
 # UNIT meraki_wireless_bandwidth_total_kbps kbps
@@ -1195,7 +1228,34 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # HELP meraki_wireless_ap_cpu_load CPU average load percentage over 5 minutes of wireless access point
 # TYPE meraki_wireless_ap_cpu_load gauge
 # UNIT meraki_wireless_ap_cpu_load percent
+<<<<<<< HEAD
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
+=======
+# HELP meraki_device_memory_used_percent Memory used percentage of the Meraki device
+# TYPE meraki_device_memory_used_percent gauge
+# UNIT meraki_device_memory_used_percent percent
+"""
+        if 'usage' in COLLECT_EXTRA:
+            response +="""
+# HELP meraki_switch_port_usage_total_bytes Total data usage on switch port in bytes
+# TYPE meraki_switch_port_usage_total_bytes gauge
+# UNIT meraki_switch_port_usage_total_bytes bytes
+# HELP meraki_switch_port_usage_upstream_bytes Upstream data usage on switch port in bytes
+# TYPE meraki_switch_port_usage_upstream_bytes gauge
+# UNIT meraki_switch_port_usage_upstream_bytes bytes
+# HELP meraki_switch_port_usage_downstream_bytes Downstream data usage on switch port in bytes
+# TYPE meraki_switch_port_usage_downstream_bytes gauge
+# UNIT meraki_switch_port_usage_downstream_bytes bytes
+# HELP meraki_wireless_usage_total_bytes Total wireless usage in bytes
+# TYPE meraki_wireless_usage_total_bytes gauge
+# UNIT meraki_wireless_usage_total_bytes bytes
+# HELP meraki_wireless_usage_sent_bytes Wireless sent usage in bytes
+# TYPE meraki_wireless_usage_sent_bytes gauge
+# UNIT meraki_wireless_usage_sent_bytes bytes
+# HELP meraki_wireless_usage_received_bytes Wireless received usage in bytes
+# TYPE meraki_wireless_usage_received_bytes gauge
+# UNIT meraki_wireless_usage_received_bytes bytes
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 """
         if 'vpn' in COLLECT_EXTRA:
             response +="""
@@ -1292,7 +1352,15 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                     response += 'meraki_wireless_ap_cpu_load' + target + '} ' + str(host_stats[host]['wirelessApCpuLoadPercent']) + '\n'
             except KeyError:
                 pass
+<<<<<<< HEAD
 >>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
+=======
+            try:
+                if 'memoryUsedPercent' in host_stats[host]:
+                    response += 'meraki_device_memory_used_percent' + target + '} ' + str(host_stats[host]['memoryUsedPercent']) + '\n'
+            except KeyError:
+                pass
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
             if 'uplinks' in host_stats[host]:
                 for uplink in host_stats[host]['uplinks'].keys():
                     response += 'meraki_device_uplink_status' + target + ',uplink="' + uplink + '"} ' + str(firewall_uplink_statuses[host_stats[host]['uplinks'][uplink]]) + '\n'
@@ -1316,6 +1384,9 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                         ap_floor_name = get_ap_floor_name(usage_data['ap_device_name'])
                         ap_target = '{name="' + _esc(usage_data['ap_device_name']) + '",office="' + _esc(network_name_label) + '",floor="' + _esc(ap_floor_name) + '",product_type="wireless"'
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
                         if 'usage' in COLLECT_EXTRA:
                             if 'UsageTotalBytes' in usage_data:
                                 response += 'meraki_wireless_usage_total_bytes' + ap_target + '} ' + str(usage_data['UsageTotalBytes']*1024) + '\n'
@@ -1323,6 +1394,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                                 response += 'meraki_wireless_usage_received_bytes' + ap_target + '} ' + str(usage_data['UsageUpstreamBytes']*1024) + '\n'
                             if 'UsageDownstreamBytes' in usage_data:
                                 response += 'meraki_wireless_usage_sent_bytes' + ap_target + '} ' + str(usage_data['UsageDownstreamBytes']*1024) + '\n'
+<<<<<<< HEAD
 =======
                         if 'UsageTotalBytes' in usage_data:
                             response += 'meraki_wireless_usage_total_bytes' + ap_target + '} ' + str(usage_data['UsageTotalBytes']*1024) + '\n'
@@ -1331,6 +1403,8 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                         if 'UsageDownstreamBytes' in usage_data:
                             response += 'meraki_wireless_usage_sent_bytes' + ap_target + '} ' + str(usage_data['UsageDownstreamBytes']*1024) + '\n'
 >>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
+=======
+>>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
                         if 'bandwidthTotalKbps' in usage_data:
                             response += 'meraki_wireless_bandwidth_total_kbps' + ap_target + '} ' + str(usage_data['bandwidthTotalKbps']) + '\n'
                         if 'bandwidthUpstreamKbps' in usage_data:
