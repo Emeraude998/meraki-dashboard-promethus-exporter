@@ -365,11 +365,11 @@ def get_wireless_ap_clients(ap_clients_info, dashboard, organization_id):
     """List access point client count at the moment in an organization
     
     Args:
-        ap_clients_info (dict[str, str]): List to append AP client count data to
+        ap_clients_info (dict[str, int]): List to append AP client count data to
         dashboard (meraki.DashboardAPI): Meraki API client instance
         organization_id (str): ID of the organization to fetch AP client counts for
     Returns:
-        None: Modifies list in place
+        None: Modifies dict in place
     """
     response = dashboard.wireless.getOrganizationWirelessClientsOverviewByDevice(
         organizationId=organization_id,
@@ -401,18 +401,18 @@ def cpu_load_calculator(core_count, load_value):
         float: CPU load percentage
     """
     # Constants
-    re = 65536  # Normalization factor
-    he = 1.5    # Maximum per-CPU load cap
+    normalization_factor = 65536  # Normalization factor
+    per_cpu_load_cap = 1.5    # Maximum per-CPU load cap
     
     # Check for invalid core count
     if core_count <= 0:
         return 0.0
     
     # Calculate per-CPU load and normalize to percentage
-    v = load_value / re
-    per_cpu_load = v / core_count
-    clamped_value = min(per_cpu_load, he)
-    normalized_value = (clamped_value / he)
+    normalized_load = load_value / normalization_factor
+    per_cpu_load = normalized_load / core_count
+    clamped_value = min(per_cpu_load, per_cpu_load_cap)
+    normalized_value = (clamped_value / per_cpu_load_cap)
     percentage = round(normalized_value * 100, 2)
     
     return percentage
@@ -457,12 +457,12 @@ def get_device_memory_usage(device_memory_usage, dashboard, organization_id):
     """Return the memory utilization history in kB for devices in the organization.
     
     Args:
-        device_memory_usage (dict[str, str]): List to append device memory usage data to
+        device_memory_usage (dict[str, float]): List to append device memory usage data to
         dashboard (meraki.DashboardAPI): Meraki API client instance
         organization_id (str): ID of the organization to fetch device memory usage for
         
     Returns:
-        None: Modifies list in place
+        None: Modifies dict in place
     """
     timespan = 120 # 2 minutes in seconds
     
@@ -1078,21 +1078,12 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                 response += 'meraki_device_using_cellular_failover' + target + '} ' + ('1' if host_stats[host]['usingCellularFailover'] else '0') + '\n'
             except KeyError:
                 pass
-            try:
-                if 'wirelessClientCount' in host_stats[host]:
-                    response += 'meraki_wireless_client_count' + target + '} ' + str(host_stats[host]['wirelessClientCount']) + '\n'
-            except KeyError:
-                pass
-            try:
-                if 'wirelessApCpuLoadPercent' in host_stats[host]:
-                    response += 'meraki_wireless_ap_cpu_load' + target + '} ' + str(host_stats[host]['wirelessApCpuLoadPercent']) + '\n'
-            except KeyError:
-                pass
-            try:
-                if 'memoryUsedPercent' in host_stats[host]:
-                    response += 'meraki_device_memory_used_percent' + target + '} ' + str(host_stats[host]['memoryUsedPercent']) + '\n'
-            except KeyError:
-                pass
+            if 'wirelessClientCount' in host_stats[host]:
+                response += 'meraki_wireless_client_count' + target + '} ' + str(host_stats[host]['wirelessClientCount']) + '\n'
+            if 'wirelessApCpuLoadPercent' in host_stats[host]:
+                response += 'meraki_wireless_ap_cpu_load' + target + '} ' + str(host_stats[host]['wirelessApCpuLoadPercent']) + '\n'
+            if 'memoryUsedPercent' in host_stats[host]:
+                response += 'meraki_device_memory_used_percent' + target + '} ' + str(host_stats[host]['memoryUsedPercent']) + '\n'
             if 'uplinks' in host_stats[host]:
                 for uplink in host_stats[host]['uplinks'].keys():
                     response += 'meraki_device_uplink_status' + target + ',uplink="' + uplink + '"} ' + str(firewall_uplink_statuses[host_stats[host]['uplinks'][uplink]]) + '\n'
