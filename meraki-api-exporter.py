@@ -101,15 +101,7 @@ def is_uplink_port(port_id, serial=None, port_tags_map=None, port_discovery_map=
             has_status_connected = True
     
     # Priority logic:
-<<<<<<< HEAD
-<<<<<<< HEAD
     # 1. If discovery shows MS/MX device connected (means the port status is connected), return TRUE (highest priority)
-=======
-    # 1. If discovery shows MS/MX device connected, return TRUE (highest priority)
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
-    # 1. If discovery shows MS/MX device connected (means the port status is connected), return TRUE (highest priority)
->>>>>>> 71fa646 (Clarify comments and update type hint for port statuses in uplink port logic)
     if is_discovered_uplink:
         return True
     
@@ -204,7 +196,7 @@ def get_switch_ports_usage(switch_ports_usage, dashboard, organization_id):
     timespan = 600  # 10 minutes in seconds
 
     print(f"Fetching switch port usage history for org {organization_id}...")
-    print(f"   Timespan: {timespan} seconds ({timespan/3600} hours)")
+    print(f"   Timespan: {timespan} seconds ({timespan/60} minutes)")
 
     try:
         response = dashboard.switch.getOrganizationSwitchPortsUsageHistoryByDeviceByInterval(
@@ -235,26 +227,11 @@ def get_switch_ports_usage(switch_ports_usage, dashboard, organization_id):
         print(f"Error fetching switch port usage: {e}")
         raise
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 def get_switch_ports_status_map(port_statuses_map, dashboard, organization_id):
     """Fetch port status for all switches in the organization.
     
     Args:
         port_statuses_map (dict[str, dict[str, str]]): Dict to update with port connectivity status
-<<<<<<< HEAD
-=======
-def get_switch_ports_status_map(ports_statuses_map, dashboard, organization_id):
-=======
-def get_switch_ports_status_map(port_statuses_map, dashboard, organization_id):
->>>>>>> 8a4bdf7 (Fix variable name inconsistencies in switch port status functions)
-    """Fetch port status for all switches in the organization.
-    
-    Args:
-        port_statuses_map (dict[str, dict[str, list[str]]]): Dict to update with port connectivity status
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
->>>>>>> 71fa646 (Clarify comments and update type hint for port statuses in uplink port logic)
         dashboard (meraki.DashboardAPI): Meraki API client instance
         organization_id (str): ID of the organization to fetch port statuses for
         
@@ -273,50 +250,22 @@ def get_switch_ports_status_map(port_statuses_map, dashboard, organization_id):
             switches_statuses = response['items']
             print(f"Found {len(switches_statuses)} switch devices")
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         # Build the port statuses map
-=======
-        # Build the port tags map
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
-        # Build the port statuses map
->>>>>>> 8a4bdf7 (Fix variable name inconsistencies in switch port status functions)
         for switch in switches_statuses:
             serial = switch.get('serial')
             if not serial:
                 continue
 
-<<<<<<< HEAD
-<<<<<<< HEAD
             port_statuses_map[serial] = {}
-=======
-            ports_statuses_map[serial] = {}
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
-            port_statuses_map[serial] = {}
->>>>>>> 8a4bdf7 (Fix variable name inconsistencies in switch port status functions)
             ports = switch.get('ports', [])
 
             for port in ports:
                 port_id = str(port.get('portId', ''))
                 status = port.get('status', '')
                 if status:
-<<<<<<< HEAD
-<<<<<<< HEAD
                     port_statuses_map[serial][port_id] = status
         
         print('Found', sum(len(ports) for ports in port_statuses_map.values()), 'port statuses')
-=======
-                    ports_statuses_map[serial][port_id] = status
-        
-        print('Found', sum(len(ports) for ports in ports_statuses_map.values()), 'port statuses')
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
-                    port_statuses_map[serial][port_id] = status
-        
-        print('Found', sum(len(ports) for ports in port_statuses_map.values()), 'port statuses')
->>>>>>> 8a4bdf7 (Fix variable name inconsistencies in switch port status functions)
 
     except Exception as e:
         print(f"Error fetching switch ports statuses: {e}")
@@ -416,27 +365,11 @@ def get_wireless_ap_clients(ap_clients_info, dashboard, organization_id):
     """List access point client count at the moment in an organization
     
     Args:
-<<<<<<< HEAD
-<<<<<<< HEAD
         ap_clients_info (dict[str, int]): List to append AP client count data to
         dashboard (meraki.DashboardAPI): Meraki API client instance
         organization_id (str): ID of the organization to fetch AP client counts for
     Returns:
         None: Modifies dict in place
-=======
-        ap_clients_info (dict[str, str]): List to append AP client count data to
-        dashboard (meraki.DashboardAPI): Meraki API client instance
-        organization_id (str): ID of the organization to fetch AP client counts for
-    Returns:
-        None: Modifies list in place
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
-        ap_clients_info (dict[str, int]): List to append AP client count data to
-        dashboard (meraki.DashboardAPI): Meraki API client instance
-        organization_id (str): ID of the organization to fetch AP client counts for
-    Returns:
-        None: Modifies dict in place
->>>>>>> 4113da5 (Refactor data type annotations in metrics functions and streamline response handling)
     """
     response = dashboard.wireless.getOrganizationWirelessClientsOverviewByDevice(
         organizationId=organization_id,
@@ -445,8 +378,6 @@ def get_wireless_ap_clients(ap_clients_info, dashboard, organization_id):
     
     # Response is a dict with 'items' and 'meta' when using total_pages="all"
     if isinstance(response, dict) and 'items' in response:
-<<<<<<< HEAD
-<<<<<<< HEAD
         all_devices = response['items']
     else:
         all_devices = response
@@ -454,31 +385,11 @@ def get_wireless_ap_clients(ap_clients_info, dashboard, organization_id):
     print('Found', sum(device.get('counts', {}).get('byStatus', {}).get('online', 0) for device in all_devices), 'wireless clients')
     
     for device in all_devices:
-=======
-        ap_clients_list = response['items']
-=======
-        all_devices = response['items']
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-    else:
-        all_devices = response
-    
-    print('Found', sum(device.get('counts', {}).get('byStatus', {}).get('online', 0) for device in all_devices), 'wireless clients')
-    
-<<<<<<< HEAD
-    for device in ap_clients_list:
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
-    for device in all_devices:
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
         serial = device.get('serial')
         client_count = device.get('counts', {}).get('byStatus', {}).get('online', 0)
         if serial:
             ap_clients_info[serial] = client_count
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
 def cpu_load_calculator(core_count, load_value):
     """Calculate CPU load percentage based on core count and load average value.
     
@@ -490,41 +401,18 @@ def cpu_load_calculator(core_count, load_value):
         float: CPU load percentage
     """
     # Constants
-<<<<<<< HEAD
-<<<<<<< HEAD
     normalization_factor = 65536  # Normalization factor
     per_cpu_load_cap = 1.5    # Maximum per-CPU load cap
-=======
-    re = 65536  # Normalization factor
-    he = 1.5    # Maximum per-CPU load cap
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
-    normalization_factor = 65536  # Normalization factor
-    per_cpu_load_cap = 1.5    # Maximum per-CPU load cap
->>>>>>> 4113da5 (Refactor data type annotations in metrics functions and streamline response handling)
     
     # Check for invalid core count
     if core_count <= 0:
         return 0.0
     
     # Calculate per-CPU load and normalize to percentage
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 4113da5 (Refactor data type annotations in metrics functions and streamline response handling)
     normalized_load = load_value / normalization_factor
     per_cpu_load = normalized_load / core_count
     clamped_value = min(per_cpu_load, per_cpu_load_cap)
     normalized_value = (clamped_value / per_cpu_load_cap)
-<<<<<<< HEAD
-=======
-    v = load_value / re
-    per_cpu_load = v / core_count
-    clamped_value = min(per_cpu_load, he)
-    normalized_value = (clamped_value / he)
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
->>>>>>> 4113da5 (Refactor data type annotations in metrics functions and streamline response handling)
     percentage = round(normalized_value * 100, 2)
     
     return percentage
@@ -565,36 +453,16 @@ def get_wireless_ap_cpu_load_history(ap_cpu_loads, dashboard, organization_id):
     
     print('Found CPU load data for', len(ap_cpu_loads), 'wireless APs')
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 def get_device_memory_usage(device_memory_usage, dashboard, organization_id):
     """Return the memory utilization history in kB for devices in the organization.
     
     Args:
-<<<<<<< HEAD
-<<<<<<< HEAD
         device_memory_usage (dict[str, float]): List to append device memory usage data to
-=======
-        device_memory_usage (dict[str, str]): List to append device memory usage data to
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
-=======
-        device_memory_usage (dict[str, float]): List to append device memory usage data to
->>>>>>> 4113da5 (Refactor data type annotations in metrics functions and streamline response handling)
         dashboard (meraki.DashboardAPI): Meraki API client instance
         organization_id (str): ID of the organization to fetch device memory usage for
         
     Returns:
-<<<<<<< HEAD
-<<<<<<< HEAD
         None: Modifies dict in place
-=======
-        None: Modifies list in place
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
-=======
-        None: Modifies dict in place
->>>>>>> 4113da5 (Refactor data type annotations in metrics functions and streamline response handling)
     """
     timespan = 600 # 10 minutes in seconds
     
@@ -621,13 +489,6 @@ def get_device_memory_usage(device_memory_usage, dashboard, organization_id):
         if serial:
             device_memory_usage[serial] = memory_used_percentage
 
-<<<<<<< HEAD
-=======
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 def parse_discovery_info(info_list):
     """Parse CDP or LLDP information from list of {'name': ..., 'value': ...} dicts
     
@@ -778,32 +639,13 @@ def get_usage(dashboard, organization_id):
     vpn_statuses = []
     org_data = {}
     switch_ports_usage = []
-<<<<<<< HEAD
-<<<<<<< HEAD
     port_statuses_map = {}
-=======
-    ports_statuses_map = {}
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
-    port_statuses_map = {}
->>>>>>> 8a4bdf7 (Fix variable name inconsistencies in switch port status functions)
     port_tags_map = {}
     port_discovery_map = {}
     devices_floor_info = {}
     ap_clients_info = {}
-<<<<<<< HEAD
-<<<<<<< HEAD
     ap_cpu_loads = {}
     device_memory_usage = {}
-=======
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
-    ap_cpu_loads = {}
-<<<<<<< HEAD
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
-    device_memory_usage = {}
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 
     # Define all data collection tasks
     threads = [
@@ -812,31 +654,13 @@ def get_usage(dashboard, organization_id):
         threading.Thread(target=get_firewall_uplink_statuses, args=(firewall_uplink_statuses, dashboard, organization_id)),
         threading.Thread(target=get_organization, args=(org_data, dashboard, organization_id)),
         threading.Thread(target=get_switch_ports_usage, args=(switch_ports_usage, dashboard, organization_id)),
-<<<<<<< HEAD
-<<<<<<< HEAD
         threading.Thread(target=get_switch_ports_status_map, args=(port_statuses_map, dashboard, organization_id)),
-=======
-        threading.Thread(target=get_switch_ports_status_map, args=(ports_statuses_map, dashboard, organization_id)),
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
-        threading.Thread(target=get_switch_ports_status_map, args=(port_statuses_map, dashboard, organization_id)),
->>>>>>> 8a4bdf7 (Fix variable name inconsistencies in switch port status functions)
         threading.Thread(target=get_switch_ports_tags_map, args=(port_tags_map, dashboard, organization_id)),
         threading.Thread(target=get_switch_ports_topology_discovery, args=(port_discovery_map, dashboard, organization_id)),
         threading.Thread(target=get_floor_name_per_device, args=(devices_floor_info, dashboard, organization_id)),
         threading.Thread(target=get_wireless_ap_clients, args=(ap_clients_info, dashboard, organization_id)),
-<<<<<<< HEAD
-<<<<<<< HEAD
         threading.Thread(target=get_wireless_ap_cpu_load_history, args=(ap_cpu_loads, dashboard, organization_id)),
         threading.Thread(target=get_device_memory_usage, args=(device_memory_usage, dashboard, organization_id)),
-<<<<<<< HEAD
-=======
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
-        threading.Thread(target=get_wireless_ap_cpu_load_history, args=(ap_cpu_loads, dashboard, organization_id)),
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
     ]
 
     # Add VPN collection thread if enabled
@@ -964,24 +788,10 @@ def get_usage(dashboard, organization_id):
 
             # Check if this port is an ap port (topology discovery)
             # or an uplink port (based on tags and / or topology discovery)
-<<<<<<< HEAD
-<<<<<<< HEAD
             is_uplink = is_uplink_port(port_id, serial=device['serial'], port_tags_map=port_tags_map, port_discovery_map=port_discovery_map, port_statuses_map=port_statuses_map)
             is_ap, ap_name = is_ap_device(port_id, serial=device['serial'], port_discovery_map=port_discovery_map)
 
             # Skip ports that are neither uplink nor AP ports
-=======
-            is_uplink = is_uplink_port(port_id, serial=device['serial'], port_tags_map=port_tags_map, port_discovery_map=port_discovery_map, port_statuses_map=ports_statuses_map)
-            is_ap, ap_name = is_ap_device(port_id, serial=device['serial'], port_discovery_map=port_discovery_map)
-
-             # Skip ports that are neither uplink nor AP ports
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
-            is_uplink = is_uplink_port(port_id, serial=device['serial'], port_tags_map=port_tags_map, port_discovery_map=port_discovery_map, port_statuses_map=port_statuses_map)
-            is_ap, ap_name = is_ap_device(port_id, serial=device['serial'], port_discovery_map=port_discovery_map)
-
-            # Skip ports that are neither uplink nor AP ports
->>>>>>> 8a4bdf7 (Fix variable name inconsistencies in switch port status functions)
             if not is_uplink and not is_ap:
                 continue  # Keep only connected uplink ports or AP ports
 
@@ -1008,39 +818,21 @@ def get_usage(dashboard, organization_id):
 
             if is_ap:
                 the_list[device['serial']]['switchPortUsage'][port_id]['ap_device_name'] = ap_name
-<<<<<<< HEAD
 
     # Add wireless client counts to devices
     for serial, client_count in ap_clients_info.items():
         if serial in the_list:
             the_list[serial]['wirelessClientCount'] = client_count
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
             
     # Add wireless AP CPU loads to devices
     for serial, cpu_load in ap_cpu_loads.items():
         if serial in the_list:
             the_list[serial]['wirelessApCpuLoadPercent'] = cpu_load
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
             
     # Add device memory usage to devices
     for serial, memory_usage in device_memory_usage.items():
         if serial in the_list:
             the_list[serial]['memoryUsedPercent'] = memory_usage
-<<<<<<< HEAD
-=======
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
->>>>>>> 31435af (Enhance uplink port identification logic and add switch port status fetching functionality)
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 
     print('Done')
     return the_list
@@ -1163,21 +955,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # HELP meraki_device_using_cellular_failover Whether the Meraki device is using cellular failover (1 for true, 0 for false)
 # TYPE meraki_device_using_cellular_failover gauge
 # UNIT meraki_device_using_cellular_failover boolean
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-# HELP meraki_switch_port_usage_total_bytes Total data usage on switch port in bytes
-# TYPE meraki_switch_port_usage_total_bytes gauge
-# UNIT meraki_switch_port_usage_total_bytes bytes
-# HELP meraki_switch_port_usage_upstream_bytes Upstream data usage on switch port in bytes
-# TYPE meraki_switch_port_usage_upstream_bytes gauge
-# UNIT meraki_switch_port_usage_upstream_bytes bytes
-# HELP meraki_switch_port_usage_downstream_bytes Downstream data usage on switch port in bytes
-# TYPE meraki_switch_port_usage_downstream_bytes gauge
-# UNIT meraki_switch_port_usage_downstream_bytes bytes
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 # HELP meraki_switch_port_bandwidth_total_kbps Total bandwidth usage on switch port in kbps
 # TYPE meraki_switch_port_bandwidth_total_kbps gauge
 # UNIT meraki_switch_port_bandwidth_total_kbps kbps
@@ -1187,21 +964,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # HELP meraki_switch_port_bandwidth_downstream_kbps Downstream bandwidth usage on switch port in kbps
 # TYPE meraki_switch_port_bandwidth_downstream_kbps gauge
 # UNIT meraki_switch_port_bandwidth_downstream_kbps kbps
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-# HELP meraki_wireless_usage_total_bytes Total wireless usage in bytes
-# TYPE meraki_wireless_usage_total_bytes gauge
-# UNIT meraki_wireless_usage_total_bytes bytes
-# HELP meraki_wireless_usage_sent_bytes Wireless sent usage in bytes
-# TYPE meraki_wireless_usage_sent_bytes gauge
-# UNIT meraki_wireless_usage_sent_bytes bytes
-# HELP meraki_wireless_usage_received_bytes Wireless received usage in bytes
-# TYPE meraki_wireless_usage_received_bytes gauge
-# UNIT meraki_wireless_usage_received_bytes bytes
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 # HELP meraki_wireless_bandwidth_total_kbps Total wireless bandwidth in kbps
 # TYPE meraki_wireless_bandwidth_total_kbps gauge
 # UNIT meraki_wireless_bandwidth_total_kbps kbps
@@ -1210,8 +972,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # UNIT meraki_wireless_bandwidth_sent_kbps kbps
 # HELP meraki_wireless_bandwidth_received_kbps Wireless received bandwidth in kbps
 # TYPE meraki_wireless_bandwidth_received_kbps gauge
-<<<<<<< HEAD
-<<<<<<< HEAD
 # UNIT meraki_wireless_bandwidth_received_kbps kbps
 # HELP meraki_wireless_client_count Number of clients connected to wireless access point
 # TYPE meraki_wireless_client_count gauge
@@ -1243,46 +1003,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 # HELP meraki_wireless_usage_received_bytes Wireless received usage in bytes
 # TYPE meraki_wireless_usage_received_bytes gauge
 # UNIT meraki_wireless_usage_received_bytes bytes
-=======
-# HELP meraki_wireless_client_count Number of clients connected to wireless access point
-# TYPE meraki_wireless_client_count gauge
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
-# UNIT meraki_wireless_bandwidth_received_kbps kbps
-# HELP meraki_wireless_client_count Number of clients connected to wireless access point
-# TYPE meraki_wireless_client_count gauge
-# UNIT meraki_wireless_client_count count
-# HELP meraki_wireless_ap_cpu_load CPU average load percentage over 5 minutes of wireless access point
-# TYPE meraki_wireless_ap_cpu_load gauge
-# UNIT meraki_wireless_ap_cpu_load percent
-<<<<<<< HEAD
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
-# HELP meraki_device_memory_used_percent Memory used percentage of the Meraki device
-# TYPE meraki_device_memory_used_percent gauge
-# UNIT meraki_device_memory_used_percent percent
-"""
-        if 'usage' in COLLECT_EXTRA:
-            response +="""
-# HELP meraki_switch_port_usage_total_bytes Total data usage on switch port in bytes
-# TYPE meraki_switch_port_usage_total_bytes gauge
-# UNIT meraki_switch_port_usage_total_bytes bytes
-# HELP meraki_switch_port_usage_upstream_bytes Upstream data usage on switch port in bytes
-# TYPE meraki_switch_port_usage_upstream_bytes gauge
-# UNIT meraki_switch_port_usage_upstream_bytes bytes
-# HELP meraki_switch_port_usage_downstream_bytes Downstream data usage on switch port in bytes
-# TYPE meraki_switch_port_usage_downstream_bytes gauge
-# UNIT meraki_switch_port_usage_downstream_bytes bytes
-# HELP meraki_wireless_usage_total_bytes Total wireless usage in bytes
-# TYPE meraki_wireless_usage_total_bytes gauge
-# UNIT meraki_wireless_usage_total_bytes bytes
-# HELP meraki_wireless_usage_sent_bytes Wireless sent usage in bytes
-# TYPE meraki_wireless_usage_sent_bytes gauge
-# UNIT meraki_wireless_usage_sent_bytes bytes
-# HELP meraki_wireless_usage_received_bytes Wireless received usage in bytes
-# TYPE meraki_wireless_usage_received_bytes gauge
-# UNIT meraki_wireless_usage_received_bytes bytes
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
 """
         if 'vpn' in COLLECT_EXTRA:
             response +="""
@@ -1358,42 +1078,12 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                 response += 'meraki_device_using_cellular_failover' + target + '} ' + ('1' if host_stats[host]['usingCellularFailover'] else '0') + '\n'
             except KeyError:
                 pass
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 4113da5 (Refactor data type annotations in metrics functions and streamline response handling)
             if 'wirelessClientCount' in host_stats[host]:
                 response += 'meraki_wireless_client_count' + target + '} ' + str(host_stats[host]['wirelessClientCount']) + '\n'
             if 'wirelessApCpuLoadPercent' in host_stats[host]:
                 response += 'meraki_wireless_ap_cpu_load' + target + '} ' + str(host_stats[host]['wirelessApCpuLoadPercent']) + '\n'
             if 'memoryUsedPercent' in host_stats[host]:
                 response += 'meraki_device_memory_used_percent' + target + '} ' + str(host_stats[host]['memoryUsedPercent']) + '\n'
-<<<<<<< HEAD
-=======
-            try:
-                if 'wirelessClientCount' in host_stats[host]:
-                    response += 'meraki_wireless_client_count' + target + '} ' + str(host_stats[host]['wirelessClientCount']) + '\n'
-            except KeyError:
-                pass
-<<<<<<< HEAD
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
-            try:
-                if 'wirelessApCpuLoadPercent' in host_stats[host]:
-                    response += 'meraki_wireless_ap_cpu_load' + target + '} ' + str(host_stats[host]['wirelessApCpuLoadPercent']) + '\n'
-            except KeyError:
-                pass
-<<<<<<< HEAD
->>>>>>> 326f5a0 (Add CPU load metric for wireless access points and update README)
-=======
-            try:
-                if 'memoryUsedPercent' in host_stats[host]:
-                    response += 'meraki_device_memory_used_percent' + target + '} ' + str(host_stats[host]['memoryUsedPercent']) + '\n'
-            except KeyError:
-                pass
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
-=======
->>>>>>> 4113da5 (Refactor data type annotations in metrics functions and streamline response handling)
             if 'uplinks' in host_stats[host]:
                 for uplink in host_stats[host]['uplinks'].keys():
                     response += 'meraki_device_uplink_status' + target + ',uplink="' + uplink + '"} ' + str(firewall_uplink_statuses[host_stats[host]['uplinks'][uplink]]) + '\n'
@@ -1416,10 +1106,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                         # Get the floor_name from the AP device, not the switch
                         ap_floor_name = get_ap_floor_name(usage_data['ap_device_name'])
                         ap_target = '{name="' + _esc(usage_data['ap_device_name']) + '",office="' + _esc(network_name_label) + '",floor="' + _esc(ap_floor_name) + '",product_type="wireless"'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
                         if 'usage' in COLLECT_EXTRA:
                             if 'UsageTotalBytes' in usage_data:
                                 response += 'meraki_wireless_usage_total_bytes' + ap_target + '} ' + str(usage_data['UsageTotalBytes']*1024) + '\n'
@@ -1427,17 +1113,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
                                 response += 'meraki_wireless_usage_received_bytes' + ap_target + '} ' + str(usage_data['UsageUpstreamBytes']*1024) + '\n'
                             if 'UsageDownstreamBytes' in usage_data:
                                 response += 'meraki_wireless_usage_sent_bytes' + ap_target + '} ' + str(usage_data['UsageDownstreamBytes']*1024) + '\n'
-<<<<<<< HEAD
-=======
-                        if 'UsageTotalBytes' in usage_data:
-                            response += 'meraki_wireless_usage_total_bytes' + ap_target + '} ' + str(usage_data['UsageTotalBytes']*1024) + '\n'
-                        if 'UsageUpstreamBytes' in usage_data:
-                            response += 'meraki_wireless_usage_received_bytes' + ap_target + '} ' + str(usage_data['UsageUpstreamBytes']*1024) + '\n'
-                        if 'UsageDownstreamBytes' in usage_data:
-                            response += 'meraki_wireless_usage_sent_bytes' + ap_target + '} ' + str(usage_data['UsageDownstreamBytes']*1024) + '\n'
->>>>>>> f01ff2a (Add wireless client count tracking and reporting for access points)
-=======
->>>>>>> caacc4b (Add memory usage metric for Meraki devices and update README)
                         if 'bandwidthTotalKbps' in usage_data:
                             response += 'meraki_wireless_bandwidth_total_kbps' + ap_target + '} ' + str(usage_data['bandwidthTotalKbps']) + '\n'
                         if 'bandwidthUpstreamKbps' in usage_data:
